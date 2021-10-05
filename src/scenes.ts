@@ -1,4 +1,4 @@
-import { Context, Scenes } from "telegraf"
+import { Context, Scenes } from 'telegraf'
 
 const unwrapCallback = async (ctx: Context, nextScene: any) => {
   const nextSceneId = await Promise.resolve(nextScene(ctx))
