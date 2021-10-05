@@ -1,0 +1,1 @@
+# Telegraf scene helper
