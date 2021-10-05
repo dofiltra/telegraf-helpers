@@ -1,4 +1,5 @@
 import { Context, Scenes } from 'telegraf'
+import { deleteMessage } from '.'
 
 const unwrapCallback = async (ctx: Context, nextScene: any) => {
   const nextSceneId = await Promise.resolve(nextScene(ctx))
@@ -35,3 +36,26 @@ export const composeWizardScene = (...advancedSteps: any[]) =>
       })
     )
   }
+
+type TSceneOpts = {
+  id: string
+  cancelButton: string
+  leaveCb?: (ctx: Context) => void
+  startCb?: (ctx: Context) => void
+}
+
+export function createScene(opts: TSceneOpts) {
+  const { id, cancelButton, leaveCb, startCb } = opts
+  const scene = new Scenes.BaseScene(id)
+  const leave = (ctx: Context, cb?: (ctx: Context) => void) => {
+    deleteMessage(ctx)
+    cb && cb(ctx)
+    ctx.scene.leave()
+  }
+
+  scene.action(cancelButton, (ctx) => leave(ctx))
+  scene.command(['start', 'help', 'cancel'], (ctx) => leave(ctx, startCb))
+  scene.leave((ctx) => leaveCb && leaveCb(ctx))
+
+  return scene
+}
