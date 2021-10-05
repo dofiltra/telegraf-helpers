@@ -49,7 +49,7 @@ export function createScene(opts: TSceneOpts) {
   const scene = new Scenes.BaseScene(id)
   const leave = (ctx: Context, cb?: (ctx: Context) => void) => {
     deleteMessage(ctx)
-    cb && cb(ctx)
+    if (cb) cb(ctx)
     ctx.scene.leave()
   }
 
