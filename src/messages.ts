@@ -53,6 +53,7 @@ export function getHtmlTagName(type: string) {
     case 'pre':
       return 'pre'
     case 'mention':
+    case 'hashtag':
       return 'a'
   }
 
@@ -60,9 +61,9 @@ export function getHtmlTagName(type: string) {
 }
 
 export function messageToHtml(ctx: Context) {
-  const message = ctx?.message as any
-  const text = message?.text
-  const entities = message?.entities
+  const message = (ctx?.message || (ctx?.update as any)?.message) as any
+  const text = message?.text || message?.caption
+  const entities = message?.entities || message.caption_entities
   const result: string[] = []
   let lastOffset = 0
 
