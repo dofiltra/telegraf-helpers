@@ -1,6 +1,6 @@
+import _ from 'lodash'
 import { Context } from 'telegraf'
 import { Message } from 'telegraf/typings/core/types/typegram'
-
 export async function deleteMessage(ctx: Context) {
   try {
     return await ctx.deleteMessage()
@@ -54,6 +54,7 @@ export function getHtmlTagName(type: string) {
       return 'pre'
     case 'mention':
     case 'hashtag':
+    case 'text_link':
       return 'a'
   }
 
@@ -64,7 +65,8 @@ export function messageToHtml(ctx: Context) {
   try {
     const message = (ctx?.message || (ctx?.update as any)?.message) as any
     const text = message?.text || message?.caption
-    const entities = message?.entities || message?.caption_entities
+    const entities = message?.entities || message?.caption_entities || []
+    const uniqEntities: any[] = _.uniqBy(entities, 'offset')
     const result: string[] = []
     let lastOffset = 0
 
@@ -72,7 +74,7 @@ export function messageToHtml(ctx: Context) {
       return { result: '', error: 'empty text' }
     }
 
-    for (const ent of entities) {
+    for (const ent of uniqEntities) {
       const tagName = getHtmlTagName(ent.type)
       result.push(
         ...[
