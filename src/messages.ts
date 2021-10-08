@@ -37,3 +37,51 @@ export async function ignoreOldMessageUpdates(ctx: Context, next: () => any) {
 
   return from && chat && message && `Ignoring message from ${from.id} at ${chat.id} (${time}:${message.date})`
 }
+
+export function getHtmlTagName(type: string) {
+  switch (type) {
+    case 'bold':
+      return 'b'
+    case 'italic':
+      return 'i'
+    case 'underline':
+      return 'u'
+    case 'strikethrough':
+      return 's'
+    case 'code':
+      return 'code'
+    case 'pre':
+      return 'pre'
+    case 'mention':
+      return 'a'
+  }
+
+  return type[0]
+}
+
+export function messageToHtml(ctx: Context) {
+  const message = ctx?.message as any
+  const text = message?.text
+  const entities = message?.entities
+  const result: string[] = []
+  let lastOffset = 0
+
+  if (!text) {
+    return ''
+  }
+
+  for (const ent of entities) {
+    const tagName = getHtmlTagName(ent.type)
+    result.push(
+      ...[
+        text.slice(lastOffset, ent.offset),
+        `<${tagName}>`,
+        text.slice(ent.offset, ent.offset + ent.length),
+        `</${tagName}>`
+      ]
+    )
+    lastOffset = ent.offset + ent.length
+  }
+
+  return (result.join('') || text).replaceAll('\n', '<br/>')
+}
