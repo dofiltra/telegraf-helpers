@@ -84,5 +84,7 @@ export function messageToHtml(ctx: Context) {
     lastOffset = ent.offset + ent.length
   }
 
-  return (result.join('') || text).replaceAll('\n', '<br/>')
+  result.push(text.slice(lastOffset, text.length))
+
+  return result.join('').replaceAll('\n', '<br/>')
 }
