@@ -61,30 +61,34 @@ export function getHtmlTagName(type: string) {
 }
 
 export function messageToHtml(ctx: Context) {
-  const message = (ctx?.message || (ctx?.update as any)?.message) as any
-  const text = message?.text || message?.caption
-  const entities = message?.entities || message.caption_entities
-  const result: string[] = []
-  let lastOffset = 0
+  try {
+    const message = (ctx?.message || (ctx?.update as any)?.message) as any
+    const text = message?.text || message?.caption
+    const entities = message?.entities || message?.caption_entities
+    const result: string[] = []
+    let lastOffset = 0
 
-  if (!text) {
-    return ''
+    if (!text) {
+      return { result: '', error: 'empty text' }
+    }
+
+    for (const ent of entities) {
+      const tagName = getHtmlTagName(ent.type)
+      result.push(
+        ...[
+          text.slice(lastOffset, ent.offset),
+          `<${tagName}>`,
+          text.slice(ent.offset, ent.offset + ent.length),
+          `</${tagName}>`
+        ]
+      )
+      lastOffset = ent.offset + ent.length
+    }
+
+    result.push(text.slice(lastOffset, text.length))
+
+    return { result: result.join('').replaceAll('\n', '<br/>') }
+  } catch (error) {
+    return { error }
   }
-
-  for (const ent of entities) {
-    const tagName = getHtmlTagName(ent.type)
-    result.push(
-      ...[
-        text.slice(lastOffset, ent.offset),
-        `<${tagName}>`,
-        text.slice(ent.offset, ent.offset + ent.length),
-        `</${tagName}>`
-      ]
-    )
-    lastOffset = ent.offset + ent.length
-  }
-
-  result.push(text.slice(lastOffset, text.length))
-
-  return result.join('').replaceAll('\n', '<br/>')
 }
