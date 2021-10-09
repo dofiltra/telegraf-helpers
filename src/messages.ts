@@ -118,6 +118,8 @@ export async function extractBase64(bot: Telegraf, fileId: string | f, isAnimate
     const photoLink = await bot.telegram.getFileLink(fileId)
     const base64 = photoLink && (await (await fetch(photoLink.href)).buffer()).toString('base64')
     return (photoLink && `data:${dataType};base64,${base64}`) || ''
-  } catch {}
+  } catch {
+    // 
+  }
   return ''
 }
