@@ -1,6 +1,9 @@
 import _ from 'lodash'
-import { Context } from 'telegraf'
+import { Context, Telegraf } from 'telegraf'
 import { Message } from 'telegraf/typings/core/types/typegram'
+import { File as f } from 'typegram/manage'
+import fetch from 'node-fetch'
+
 export async function deleteMessage(ctx: Context) {
   try {
     return await ctx.deleteMessage()
@@ -93,4 +96,28 @@ export function messageToHtml(ctx: Context) {
   } catch (error) {
     return { error }
   }
+}
+
+export function extractMedia(ctx: Context) {
+  const message = (ctx?.message || (ctx?.update as any)?.message) as any
+
+  const sticker = message?.sticker
+  const animation = message?.animation
+  const video = message?.video
+  const photo = message?.photo && (message?.photo[1] || message?.photo[0])
+
+  return photo || sticker || animation || video
+}
+
+export async function extractBase64(bot: Telegraf, fileId: string | f, isAnimated = false) {
+  if (!fileId) {
+    return ''
+  }
+  try {
+    const dataType = isAnimated ? 'image/gif' : 'image/png'
+    const photoLink = await bot.telegram.getFileLink(fileId)
+    const base64 = photoLink && (await (await fetch(photoLink.href)).buffer()).toString('base64')
+    return (photoLink && `data:${dataType};base64,${base64}`) || ''
+  } catch {}
+  return ''
 }
